@@ -13,11 +13,11 @@ const authorizationHeaders = {
 
 /**
  * Begin the checkin process
- * @returns 
+ * @returns {Promise<CheckinResponse>}
  */
-export async function checkin() {
+export async function checkin(): Promise<CheckinResponse> {
     const now = new Date();
-    const createUrl = `https://sentry.io/api/0/organizations/${env.SENTRY_ORGANIZATION}/monitors/${env.SENTRY_MONITOR_ID}/checkins`;
+    const createUrl = `https://sentry.io/api/0/organizations/${env.SENTRY_ORGANIZATION}/monitors/${env.SENTRY_MONITOR_ID}/checkins/`;
     const response: AxiosResponse<{id: string}> = await axios.post(createUrl, {status: "in_progress"}, {
         headers: authorizationHeaders,
         validateStatus: null
@@ -37,7 +37,7 @@ export async function checkout(checkinId: string, startTime: Date, success: bool
     const endTime = new Date();
     const duration = endTime.getTime() - startTime.getTime();
 
-    const updateURL = `https://sentry.io/api/0/monitors/${env.SENTRY_MONITOR_ID}/checkins/${checkinId}/`;
+    const updateURL = `https://sentry.io/api/0/organizations/${env.SENTRY_ORGANIZATION}/monitors/${env.SENTRY_MONITOR_ID}/checkins/${checkinId}/`;
     const response = await axios.put(updateURL, {status: success ? "ok" : "error"}, {
         headers: authorizationHeaders,
         validateStatus: null
