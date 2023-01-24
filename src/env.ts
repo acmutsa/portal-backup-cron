@@ -18,4 +18,13 @@ export const env = envsafe({
     default: '',
     allowEmpty: true,
   }),
+  SENTRY_ORGANIZATION: str({
+    desc: 'The organization ID of the Sentry monitoring system.'
+  }),
+  SENTRY_MONITOR_ID: str({
+    desc: 'The monitor ID of the Sentry monitor for this cron job.'
+  }),
+  SENTRY_AUTH_TOKEN: str({
+    desc: 'The authorization token to be used for this cron job\'s API calls.'
+  })
 })

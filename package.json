@@ -1,6 +1,6 @@
 {
   "name": "railway-pg-s3-backup",
-  "version": "0.0.1",
+  "version": "0.1",
   "description": "A simple Node app to backup PostgreSQL databases to an S3 bucket",
   "main": "dist/index.js",
   "scripts": {
@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.162.0",
+    "axios": "^1.2.3",
     "cron": "^2.1.0",
     "envsafe": "^2.0.3"
   },

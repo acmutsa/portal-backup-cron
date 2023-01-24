@@ -1,6 +1,7 @@
 import { exec } from "child_process";
 import { PutObjectCommand, S3Client, S3ClientConfig } from "@aws-sdk/client-s3";
 import { createReadStream } from "fs";
+import {checkin, checkout} from "./sentry";
 
 import { env } from "./env";
 
@@ -15,7 +16,7 @@ const uploadToS3 = async ({ name, path }: {name: string, path: string}) => {
 
   if (env.AWS_S3_ENDPOINT) {
     console.log(`Using custom endpoint: ${env.AWS_S3_ENDPOINT}`)
-    clientOptions['endpoint'] = env.AWS_S3_ENDPOINT;
+    clientOptions.endpoint = env.AWS_S3_ENDPOINT;
   }
 
   const client = new S3Client(clientOptions);
@@ -59,8 +60,15 @@ export const backup = async () => {
   const filename = `backup-${timestamp}.tar.gz`
   const filepath = `/tmp/${filename}`
 
-  await dumpToFile(filepath)
-  await uploadToS3({name: filename, path: filepath})
+  const {checkinId, startTime} = await checkin();
+  let success = true;
+  try {
+    await dumpToFile(filepath)
+    await uploadToS3({name: filename, path: filepath})
+  } catch (e) {
+    success = false;
+  }
+  const {duration} = await checkout(checkinId, startTime, success);
 
-  console.log("DB backup complete...")
+  console.log(`Backup completed in ${duration}ms.`)
 }
