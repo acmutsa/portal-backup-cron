@@ -61,14 +61,18 @@ export const backup = async () => {
   const filepath = `/tmp/${filename}`
 
   const {checkinId, startTime} = await checkin();
+  if (checkinId == undefined)
+    console.log('Error: Failed to checkin to Sentry Cron API.')
   let success = true;
   try {
     await dumpToFile(filepath)
     await uploadToS3({name: filename, path: filepath})
   } catch (e) {
+    console.log(`Error: ${e instanceof Error ? e.message : 'Unknown'}`)
     success = false;
   }
-  const {duration} = await checkout(checkinId, startTime, success);
 
+  const duration = (new Date()).getTime() - startTime.getTime();
+  await checkout(checkinId ?? null, startTime, success);
   console.log(`Backup completed in ${duration}ms.`)
 }

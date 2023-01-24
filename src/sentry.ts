@@ -2,7 +2,7 @@ import { env } from "./env";
 import axios, { AxiosResponse } from "axios";
 
 export type CheckinResponse = {
-    checkinId: string,
+    checkinId: string | undefined,
     startTime: Date
 }
 
@@ -33,9 +33,8 @@ export async function checkin(): Promise<CheckinResponse> {
  * @param success {boolean} If true,
  * @returns 
  */
-export async function checkout(checkinId: string, startTime: Date, success: boolean) {
+export async function checkout(checkinId: string | null, startTime: Date, success: boolean) {
     const endTime = new Date();
-    const duration = endTime.getTime() - startTime.getTime();
 
     const updateURL = `https://sentry.io/api/0/organizations/${env.SENTRY_ORGANIZATION}/monitors/${env.SENTRY_MONITOR_ID}/checkins/${checkinId}/`;
     const response = await axios.put(updateURL, {status: success ? "ok" : "error"}, {
@@ -43,5 +42,5 @@ export async function checkout(checkinId: string, startTime: Date, success: bool
         validateStatus: null
     });
 
-    return {duration, endTime}
+    return {endTime}
 }
