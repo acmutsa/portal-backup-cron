@@ -1,4 +1,4 @@
-import { envsafe, str } from "envsafe";
+import { envsafe, str, num } from "envsafe";
 
 export const env = envsafe({
   AWS_ACCESS_KEY_ID: str(),
@@ -15,16 +15,17 @@ export const env = envsafe({
   }),
   AWS_S3_ENDPOINT: str({
     desc: 'The S3 custom endpoint you want to use.',
-    default: '',
     allowEmpty: true,
   }),
-  SENTRY_ORGANIZATION: str({
-    desc: 'The organization ID of the Sentry monitoring system.'
+  SENTRY_ORGANIZATION_ID: str({
+    desc: 'The organization ID of the Sentry monitoring system.',
+    example: 'o456045594569457'
   }),
-  SENTRY_MONITOR_ID: str({
-    desc: 'The monitor ID of the Sentry monitor for this cron job.'
+  SENTRY_MONITOR_SLUG: str({
+    desc: 'The monitor ID of the Sentry monitor for this cron job.',
   }),
-  SENTRY_AUTH_TOKEN: str({
-    desc: 'The authorization token to be used for this cron job\'s API calls.'
-  })
+  SENTRY_PROJECT_ID: num({
+    desc: 'The project ID of the Sentry monitoring system.'
+  }),
+  SENTRY_ORGANIZATION_PUBLIC_KEY: str(),
 })

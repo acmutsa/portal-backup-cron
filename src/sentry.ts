@@ -1,49 +1,34 @@
+import { randomUUID } from "crypto";
 import { env } from "./env";
 import axios, { AxiosResponse } from "axios";
 
-export type CheckinResponse = {
-    checkinId: string | undefined,
-    startTime: Date
-}
+const SENTRY_INGEST_URL = `https://${env.SENTRY_ORGANIZATION_ID}.ingest.sentry.io`;
+const SENTRY_MONITOR_URL = `${SENTRY_INGEST_URL}/api/${env.SENTRY_PROJECT_ID}/cron/${env.SENTRY_MONITOR_SLUG}/${env.SENTRY_ORGANIZATION_PUBLIC_KEY}`;
 
-const authorizationHeaders = {
-    'Authorization': `Bearer ${env.SENTRY_AUTH_TOKEN}`,
-    'Content-Type': 'application/json'
-}
 
 /**
- * Begin the checkin process
+ * Begin the check-in process, returning a check-in ID and the start time
  * @returns {Promise<CheckinResponse>}
  */
-export async function checkin(): Promise<CheckinResponse> {
+export async function checkin(): Promise<{check_in_id: string, startTime: Date}> {
     const now = new Date();
-    const createUrl = `https://sentry.io/api/0/organizations/${env.SENTRY_ORGANIZATION}/monitors/${env.SENTRY_MONITOR_ID}/checkins/`;
-    const response: AxiosResponse<{id: string}> = await axios.post(createUrl, {status: "in_progress"}, {
-        headers: authorizationHeaders,
-        validateStatus: null
-    })
-
-    // debug
-    console.log(response.data);
-
-    return {checkinId: response.data.id, startTime: now}
+    const check_in_id = randomUUID();
+    
+    await axios.get(SENTRY_MONITOR_URL, {params: { check_in_id: check_in_id, status: "in_progress"}});
+    
+    return {check_in_id, startTime: now}
 }
 
 /**
  * 
- * @param checkinId The identifier of the checkin originally obtained from the @see checkin
- * @param startTime 
- * @param success {boolean} If true,
- * @returns 
+ * @param check_in_id The identifier of the check-in originally obtained from the @see checkin
+ * @param isSuccess {boolean} If true, the check-in will be marked as successful. If false, it will be marked as failed.
+ * @returns {Promise<{endTime: Date}>}
  */
-export async function checkout(checkinId: string | null, startTime: Date, success: boolean) {
+export async function checkout(check_in_id: string | null, isSuccess: boolean): Promise<{endTime: Date}> {
     const endTime = new Date();
 
-    const updateURL = `https://sentry.io/api/0/organizations/${env.SENTRY_ORGANIZATION}/monitors/${env.SENTRY_MONITOR_ID}/checkins/${checkinId}/`;
-    const response = await axios.put(updateURL, {status: success ? "ok" : "error"}, {
-        headers: authorizationHeaders,
-        validateStatus: null
-    });
+    const response = await axios.get(SENTRY_MONITOR_URL, {params: { check_in_id: check_in_id, status: isSuccess ? "ok" : "error"}});
 
     return {endTime}
 }

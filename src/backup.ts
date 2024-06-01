@@ -61,8 +61,8 @@ export const backup = async () => {
   const filename = `backup-${timestamp}.tar.gz`;
   const filepath = `/tmp/${filename}`;
 
-  const { checkinId, startTime } = await checkin();
-  if (checkinId == undefined)
+  const { check_in_id, startTime } = await checkin();
+  if (check_in_id == undefined)
     console.log("Error: Failed to checkin to Sentry Cron API.");
   
   let error = null;
@@ -83,7 +83,7 @@ export const backup = async () => {
   }
 
   const duration = new Date().getTime() - startTime.getTime();
-  await checkout(checkinId ?? null, startTime, error == null);
+  await checkout(check_in_id ?? null, error == null);
 
   console.log(`Backup completed in ${duration}ms.`);
 };
