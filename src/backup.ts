@@ -19,7 +19,7 @@ if (env.AWS_S3_ENDPOINT) {
 const client = new S3Client(clientOptions);
 
 const uploadToS3 = async ({ name: key, path }: { name: string; path: string }) => {
-  console.log(`Uploading ${path} to S3/${env.AWS_S3_BUCKET}/${key}...`);
+  console.log(`Uploading ${path} to S3 @ ${env.AWS_S3_BUCKET}/${key}...`);
 
   const bucket = env.AWS_S3_BUCKET;
   await client.send(
@@ -73,17 +73,23 @@ export const backup = async () => {
     const stats = await stat(filepath);
     console.log(`Dumped database size: ${stats.size} bytes`)
     if (stats.size < 16 * 1024) {
-      throw new Error("Error: backup file size is less than 16KB, upload is not feasibly useful and is unlikely to be a valid backup.");
+      throw new Error("backup file size is less than 16KB, upload is not feasibly useful and is unlikely to be a valid backup.");
     }
 
+    // File ready, upload to S3
     await uploadToS3({ name: filename, path: filepath });
   } catch (e) {
-    console.log(`Error: ${e instanceof Error ? e.message : "Unknown"}`);
     error = e;
   }
 
-  const duration = new Date().getTime() - startTime.getTime();
+  // Error needs to be reported now so the check-in can be marked as failed
   await checkout(check_in_id ?? null, error == null);
-
-  console.log(`Backup completed in ${duration}ms.`);
+  
+  // The error will propagate up to be logged by the main function
+  if (error != null) {
+    throw error;
+  } else {
+    const duration = new Date().getTime() - startTime.getTime();
+    console.log(`Backup completed in ${duration}ms.`);
+  }
 };

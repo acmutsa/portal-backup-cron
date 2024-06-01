@@ -28,7 +28,7 @@ export async function checkin(): Promise<{check_in_id: string, startTime: Date}>
 export async function checkout(check_in_id: string | null, isSuccess: boolean): Promise<{endTime: Date}> {
     const endTime = new Date();
 
-    const response = await axios.get(SENTRY_MONITOR_URL, {params: { check_in_id: check_in_id, status: isSuccess ? "ok" : "error"}});
+    await axios.get(SENTRY_MONITOR_URL, {params: { check_in_id: check_in_id, status: isSuccess ? "ok" : "error"}});
 
     return {endTime}
 }
