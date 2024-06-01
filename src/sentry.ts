@@ -23,6 +23,9 @@ export async function checkin(): Promise<CheckinResponse> {
         validateStatus: null
     })
 
+    // debug
+    console.log(response.data);
+
     return {checkinId: response.data.id, startTime: now}
 }
 
